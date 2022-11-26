@@ -1,15 +1,32 @@
 use js_sys::Array;
 use wasm_bindgen::{prelude::*, JsCast};
-use web_sys::HtmlElement;
+use web_sys::{HtmlElement, Request, RequestInit, RequestMode, Response};
 
-use crate::{defined_in_js::MyClass, wasm_in_wasm::run_async, pass_closure::{setup_clock, setup_clicker}};
+use crate::{
+    canvas::run_canvas,
+    defined_in_js::MyClass,
+    pass_closure::{setup_clicker, setup_clock},
+    performance::perf_to_system,
+    req_frame::frame_run,
+    wasm_in_wasm::run_async,
+    web_gl::webgl,
+    webrtc::web_start,
+    websocket::start_websocket, paint::start_paint,
+};
 pub mod counter;
 pub mod defined_in_js;
 mod pass_closure;
 mod wasm_in_wasm;
 use wasm_bindgen_futures::{spawn_local, JsFuture};
-
-// use wasm_bindgen_futures::*;
+pub mod canvas;
+pub mod fm_oscillator;
+mod paint;
+mod performance;
+mod req_frame;
+mod web_gl;
+mod webrtc;
+mod websocket;
+pub mod web_worker;
 
 #[wasm_bindgen]
 extern "C" {
@@ -131,10 +148,68 @@ pub fn main() -> Result<(), JsValue> {
         .style()
         .set_property("display", "block")?;
 
+    //performance
+    let performance = window
+        .performance()
+        .expect("performance should be available");
+    console_log!("the current time (in ms) is {}", performance.now());
+
+    let start = perf_to_system(performance.timing().request_start());
+    let end = perf_to_system(performance.timing().response_end());
+
+    console_log!("request started at {}", humantime::format_rfc3339(start));
+    console_log!("request ended at {}", humantime::format_rfc3339(end));
+
+    // canvas
+    run_canvas(&document);
+
+    //webGl
+    // webgl(&document)?;
+
+    //websocket
+    start_websocket()?;
+    //webrtc
+    // web_start();
+
+    //frame
+    // frame_run()?;
+
+    // simple paint
+
+    start_paint()?;
+
     Ok(())
 }
 
 #[wasm_bindgen]
 pub fn add(a: u32, b: u32) -> u32 {
     a + b
+}
+
+#[wasm_bindgen]
+pub async fn run_fetch(repo: String) -> Result<JsValue, JsValue> {
+    let mut opts = RequestInit::new();
+    opts.method("GET");
+    opts.mode(RequestMode::Cors);
+
+    let url = format!("https://api.github.com/repos/{}/branches/master", repo);
+
+    let request = Request::new_with_str_and_init(&url, &opts)?;
+
+    request
+        .headers()
+        .set("Accept", "application/vnd.github.v3+json")?;
+
+    let window = web_sys::window().unwrap();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+
+    // `resp_value` is a `Response` object.
+    assert!(resp_value.is_instance_of::<Response>());
+    let resp: Response = resp_value.dyn_into().unwrap();
+
+    // Convert this other `Promise` into a rust `Future`.
+    let json = JsFuture::from(resp.json()?).await?;
+
+    // Send the JSON response back to JS.
+    Ok(json)
 }

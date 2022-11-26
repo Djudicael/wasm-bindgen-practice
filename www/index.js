@@ -1,4 +1,4 @@
-import init, { add, greet, Counter } from "../pkg/wasm_full_learn.js";
+import init, { add, greet, Counter, run_fetch, draw, FmOsc } from "../pkg/wasm_full_learn.js";
 import { chars } from './chars-list.js';
 
 let counters = [];
@@ -68,11 +68,74 @@ const run = async () => {
     await init();
     const result = add(4, 5);
     console.log(result);
-    greet("test");
+    // greet("test");
     addCounter();
     let b = document.getElementById('add-counter');
     if (!b) throw new Error('Unable to find #add-counter');
     b.addEventListener('click', ev => addCounter());
+
+    const resultFetch = await run_fetch("Djudicael");
+    console.log("resultFetch");
+    console.log(resultFetch);
+
+    juliaSet();
+    fmOscillator();
 }
+
+const juliaSet = () => {
+    const canvas = document.getElementById('drawing');
+    const ctx = canvas.getContext('2d');
+
+    const realInput = document.getElementById('real');
+    const imaginaryInput = document.getElementById('imaginary');
+    const renderBtn = document.getElementById('render');
+
+    renderBtn.addEventListener('click', () => {
+        const real = parseFloat(realInput.value) || 0;
+        const imaginary = parseFloat(imaginaryInput.value) || 0;
+        draw(ctx, 600, 600, real, imaginary);
+    });
+
+    draw(ctx, 600, 600, -0.15, 0.65);
+}
+
+const fmOscillator = () => {
+    let fm = null;
+    const play_button = document.getElementById("play");
+    play_button.addEventListener("click", event => {
+        if (fm === null) {
+            fm = new FmOsc();
+            fm.set_note(50);
+            fm.set_fm_frequency(0);
+            fm.set_fm_amount(0);
+            fm.set_gain(0.8);
+        } else {
+            fm.free();
+            fm = null;
+        }
+    });
+
+    const primary_slider = document.getElementById("primary_input");
+    primary_slider.addEventListener("input", event => {
+        if (fm) {
+            fm.set_note(parseInt(event.target.value));
+        }
+    });
+
+    const fm_freq = document.getElementById("fm_freq");
+    fm_freq.addEventListener("input", event => {
+        if (fm) {
+            fm.set_fm_frequency(parseFloat(event.target.value));
+        }
+    });
+
+    const fm_amount = document.getElementById("fm_amount");
+    fm_amount.addEventListener("input", event => {
+        if (fm) {
+            fm.set_fm_amount(parseFloat(event.target.value));
+        }
+    });
+}
+
 
 run();
