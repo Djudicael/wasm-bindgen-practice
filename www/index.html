@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            font-family: sans-serif;
+            font-size: 16pt;
+        }
+
+        h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        button {
+            padding: 5px 10px;
+            border: none;
+            background: slategrey;
+            margin: 10px auto;
+            color: white;
+        }
+
+        body {
+            width: 400px;
+            margin: auto;
+        }
+
+        #container,
+        .counter {
+            display: flex;
+            flex-flow: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            align-content: flex-start;
+        }
+
+        .counter {
+            margin-bottom: 10px;
+            background: steelblue;
+            color: white;
+            align-items: center;
+            width: 100%;
+        }
+
+        .field {
+            display: flex;
+            flex-flow: row;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        #green-square {
+            background: green;
+            width: 200px;
+            height: 200px;
+            text-align: center;
+            line-height: 200px;
+            color: white;
+        }
+
+        #green-square span {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="add-counter" type="button">add counter</button>
+    <div id="container">
+
+    </div>
+    <div id='loading'>
+        Loading...
+    </div>
+    <div id='script' style='display:none'>
+        <p>
+            The current time is:
+            <span id='current-time'>...</span>
+        </p>
+
+        <div id='green-square'>
+            <span>Click me!</span>
+        </div>
+        <p>
+            You've clicked the green square
+            <span id='num-clicks'>0</span>
+            times
+        </p>
+    </div>
+    <script type="module" src="./bootstrap.js"></script>
+</body>
+
+</html>
